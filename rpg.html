@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>간단 HTML RPG</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="game">
+    <h1>HTML 미니 RPG</h1>
+    <div class="subtitle">턴제 전투 · 클릭으로만 즐기는 간단 RPG</div>
+    <div class="stage" id="stageText">스테이지 1</div>
+
+    <div class="status-row">
+      <!-- Hero -->
+      <div class="card" id="heroCard">
+        <div class="card-header">
+          <span class="name" id="heroName">용사</span>
+          <span class="type">플레이어</span>
+        </div>
+        <div class="avatar" id="heroAvatar">🧙‍♂️</div>
+        <div class="hp-text" id="heroHpText"></div>
+        <div class="hp-bar">
+          <div class="hp-fill" id="heroHpFill"></div>
+        </div>
+        <div class="stat-line">
+          <span id="heroAtkText">공격력: -</span>
+          <span id="heroDefText">방어력: -</span>
+        </div>
+      </div>
+
+      <!-- Enemy -->
+      <div class="card" id="enemyCard">
+        <div class="card-header">
+          <span class="name" id="enemyName">슬라임</span>
+          <span class="type">적</span>
+        </div>
+        <div class="avatar" id="enemyAvatar">👾</div>
+        <div class="hp-text" id="enemyHpText"></div>
+        <div class="hp-bar">
+          <div class="hp-fill" id="enemyHpFill"></div>
+        </div>
+        <div class="stat-line">
+          <span id="enemyAtkText">공격력: -</span>
+          <span id="enemyDefText">방어력: -</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="controls">
+      <button id="attackBtn">⚔ 공격</button>
+      <button id="healBtn" class="secondary">💊 회복</button>
+      <div id="skillControls" style="display: flex; gap: 8px; width: 100%; margin-bottom: 8px;">
+        <!-- 스킬 버튼들은 JavaScript로 동적으로 추가됨 -->
+      </div>
+      <div id="itemControls" style="display: flex; gap: 8px; width: 100%; margin-bottom: 8px;">
+        <!-- 아이템 버튼들은 JavaScript로 동적으로 추가됨 -->
+      </div>
+      <button id="saveBtn" class="secondary">💾 저장</button>
+      <button id="equipBtn" class="secondary">🎒 장비</button>
+      <button id="nextBtn" class="secondary">➡ 다음 적</button>
+      <button id="resetBtn" class="danger">♻ 처음부터</button>
+    </div>
+
+    <div id="log" class="log"></div>
+    <div class="footer-hint">TIP: 공격/회복만으로도 클리어 가능! 코드 수정해서 직접 확장해보세요 🙂</div>
+
+    <!-- 레벨업 모달 -->
+    <div id="levelUpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: rgba(15, 15, 20, 0.95); border-radius: 18px; padding: 20px; width: 300px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <h3 style="margin: 0 0 15px; text-align: center; color: #facc15;">레벨업!</h3>
+        <p style="text-align: center; margin-bottom: 15px;">능력치를 분배하세요</p>
+        <div id="statButtons" style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <button id="atkUpBtn" class="secondary" style="flex: 1;">⚔ 공격력 +2</button>
+          <button id="defUpBtn" class="secondary" style="flex: 1;">🛡️ 방어력 +1</button>
+          <button id="hpUpBtn" class="secondary" style="flex: 1;">❤️ HP +10</button>
+        </div>
+        <p style="text-align: center; font-size: 12px; color: #9ca3af;">남은 포인트: <span id="remainingPoints">0</span></p>
+      </div>
+    </div>
+
+    <!-- 장비 모달 -->
+    <div id="equipModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: rgba(15, 15, 20, 0.95); border-radius: 18px; padding: 20px; width: 350px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <h3 style="margin: 0 0 15px; text-align: center; color: #facc15;">장비</h3>
+        <div style="margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px; font-size: 14px;">현재 장비</h4>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <div style="flex: 1; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+              <div style="font-size: 20px;">🗡️</div>
+              <div style="font-size: 12px;" id="currentWeapon">없음</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+              <div style="font-size: 20px;">🦺</div>
+              <div style="font-size: 12px;" id="currentArmor">없음</div>
+            </div>
+          </div>
+        </div>
+        <div id="equipmentList">
+          <!-- 장비 아이템들은 JavaScript로 동적으로 추가됨 -->
+        </div>
+        <button id="closeEquipBtn" style="width: 100%; margin-top: 15px;">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

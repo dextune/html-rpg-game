@@ -55,69 +55,39 @@ body {
   border-radius: 8px;
 }
 
-#panels-container {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-}
-
-.panel {
-  flex: 1;
-  background: #374151;
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.panel-header {
+#battlefield {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  background: linear-gradient(to top, #374151, #4b5563);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.battle-hero, .battle-enemy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 150px;
+}
+
+.battle-hero .avatar { transform: scaleX(-1); }
+
+.avatar {
+  font-size: 80px;
+  line-height: 1;
+}
+
+.name {
   font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.panel-header .type {
-  font-size: 12px;
-  color: #d1d5db;
-  font-weight: 400;
-}
-
-.panel-body {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.panel-body .avatar {
-  font-size: 48px;
-  background: rgba(0,0,0,0.2);
-  border-radius: 8px;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.panel-body .stats {
-  flex: 1;
-}
-
-.hp-text {
-  font-size: 12px;
-  text-align: right;
-  color: #e5e7eb;
-  margin-bottom: 4px;
+  font-size: 16px;
+  background: rgba(0,0,0,0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .hp-bar {
-  position: relative;
   width: 100%;
   height: 12px;
   border-radius: 999px;
@@ -127,9 +97,6 @@ body {
 }
 
 .hp-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
   height: 100%;
   width: 100%;
   background: linear-gradient(90deg, #22c55e, #84cc16);
@@ -137,17 +104,42 @@ body {
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.hp-fill.damage {
-  background: linear-gradient(90deg, #ef4444, #f97316);
-  transition: background 0.1s;
+.hp-text {
+  font-size: 12px;
+  color: #e5e7eb;
 }
 
-.stat-line {
+.exp-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #111827;
+  overflow: hidden;
+  border: 1px solid #4b5563;
+  margin-top: 4px;
+}
+
+.exp-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #facc15, #eab308);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.battle-vs {
+  font-size: 40px;
+  font-weight: bold;
+  color: rgba(255,255,255,0.5);
+}
+
+#hero-stats-extra, #enemy-stats-extra {
   display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #d1d5db;
-  margin-top: 6px;
+  justify-content: space-around;
+  font-size: 13px;
+  background: rgba(0,0,0,0.2);
+  padding: 8px;
+  border-radius: 8px;
 }
 
 #controls-container {
@@ -190,13 +182,8 @@ button:active {
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
-button.secondary {
-  background: #4b5563;
-}
-
-button.danger {
-  background: #dc2626;
-}
+button.secondary { background: #4b5563; }
+button.danger { background: #dc2626; }
 
 button:disabled {
   opacity: 0.5;
@@ -222,10 +209,7 @@ button:disabled {
   scroll-behavior: smooth;
 }
 
-.log-line {
-  padding: 2px 4px;
-}
-
+.log-line { padding: 2px 4px; }
 .log-line.system { color: #38bdf8; }
 .log-line.hero { color: #4ade80; }
 .log-line.enemy { color: #f87171; }
@@ -240,14 +224,28 @@ button:disabled {
 }
 
 /* Animations */
-.attack-animation { animation: attackShake 0.3s ease-in-out; }
+.attack-animation { animation: attackShake 0.4s ease-in-out; }
 .damage-animation { animation: damageFlash 0.4s ease-in-out; }
 .heal-animation { animation: healGlow 0.5s ease-in-out; }
 
 @keyframes attackShake {
+  0%, 100% { transform: translateX(0) scaleX(-1); }
+  20% { transform: translateX(-8px) scaleX(-1); }
+  40% { transform: translateX(8px) scaleX(-1); }
+  60% { transform: translateX(-8px) scaleX(-1); }
+  80% { transform: translateX(8px) scaleX(-1); }
+}
+
+.battle-enemy .attack-animation {
+  animation-name: enemyAttackShake;
+}
+
+@keyframes enemyAttackShake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px) rotate(-1deg); }
-  75% { transform: translateX(4px) rotate(1deg); }
+  20% { transform: translateX(8px); }
+  40% { transform: translateX(-8px); }
+  60% { transform: translateX(8px); }
+  80% { transform: translateX(-8px); }
 }
 
 @keyframes damageFlash {

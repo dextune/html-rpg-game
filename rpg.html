@@ -21,47 +21,37 @@
     <main class="game-main">
       <div class="stage" id="stageText">스테이지 1</div>
       <div id="panels-container">
-        <!-- Hero Panel -->
-        <div class="panel hero-panel">
-          <div class="panel-header">
-            <span class="name" id="heroName">용사</span>
-            <span class="type" data-lang="player">플레이어</span>
-          </div>
-          <div class="panel-body">
+        <div id="battlefield">
+          <div class="battle-hero">
             <div class="avatar" id="heroAvatar">🧙‍♂️</div>
-            <div class="stats">
-              <div class="hp-text" id="heroHpText"></div>
-              <div class="hp-bar">
-                <div class="hp-fill" id="heroHpFill"></div>
-              </div>
-              <div class="stat-line">
-                <span id="heroAtkText">공격력: -</span>
-                <span id="heroDefText">방어력: -</span>
-              </div>
+            <div class="name" id="heroName">용사 (Lv.1)</div>
+            <div class="hp-bar">
+              <div class="hp-fill" id="heroHpFill"></div>
+            </div>
+            <div class="hp-text" id="heroHpText"></div>
+            <div class="exp-bar">
+              <div class="exp-fill" id="heroExpFill"></div>
             </div>
           </div>
-        </div>
-
-        <!-- Enemy Panel -->
-        <div class="panel enemy-panel">
-          <div class="panel-header">
-            <span class="name" id="enemyName">슬라임</span>
-            <span class="type" data-lang="enemy">적</span>
-          </div>
-          <div class="panel-body">
+          <div class="battle-vs">VS</div>
+          <div class="battle-enemy">
             <div class="avatar" id="enemyAvatar">👾</div>
-            <div class="stats">
-              <div class="hp-text" id="enemyHpText"></div>
-              <div class="hp-bar">
-                <div class="hp-fill" id="enemyHpFill"></div>
-              </div>
-              <div class="stat-line">
-                <span id="enemyAtkText">공격력: -</span>
-                <span id="enemyDefText">방어력: -</span>
-              </div>
+            <div class="name" id="enemyName">슬라임</div>
+            <div class="hp-bar">
+              <div class="hp-fill" id="enemyHpFill"></div>
             </div>
+            <div class="hp-text" id="enemyHpText"></div>
           </div>
         </div>
+      </div>
+
+      <div id="hero-stats-extra" class="stat-line">
+        <span id="heroAtkText">공격력: -</span>
+        <span id="heroDefText">방어력: -</span>
+      </div>
+      <div id="enemy-stats-extra" class="stat-line">
+        <span id="enemyAtkText">공격력: -</span>
+        <span id="enemyDefText">방어력: -</span>
       </div>
 
       <div id="controls-container">
@@ -78,7 +68,8 @@
         <div id="game-actions" class="sub-controls">
           <button id="saveBtn" class="secondary" data-lang="save">💾 저장</button>
           <button id="equipBtn" class="secondary" data-lang="equip">🎒 장비</button>
-          <button id="nextBtn" class="secondary" data-lang="next_enemy">➡ 다음 적</button>
+          <select id="stageSelector" class="secondary"></select>
+          <button id="startBattleBtn" data-lang="start_battle">⚔️ 전투 시작</button>
           <button id="resetBtn" class="danger" data-lang="restart">♻ 처음부터</button>
         </div>
       </div>
@@ -117,6 +108,14 @@
               <div style="font-size: 20px;">🦺</div>
               <div style="font-size: 12px;" id="currentArmor" data-lang-none="equip_none">없음</div>
             </div>
+            <div style="flex: 1; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+              <div style="font-size: 20px;">🧤</div>
+              <div style="font-size: 12px;" id="currentGloves" data-lang-none="equip_none">없음</div>
+            </div>
+            <div style="flex: 1; text-align: center; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+              <div style="font-size: 20px;">👢</div>
+              <div style="font-size: 12px;" id="currentBoots" data-lang-none="equip_none">없음</div>
+            </div>
           </div>
         </div>
         <div id="equipmentList">
@@ -128,7 +127,12 @@
   </div>
 
   <script src="js/languages.js"></script>
-  <script src="js/data.js"></script>
+  <script src="js/data-hero.js"></script>
+  <script src="js/data-skills.js"></script>
+  <script src="js/data-items.js"></script>
+  <script src="js/data-equipment.js"></script>
+  <script src="js/data-enemies.js"></script>
+  <script src="js/data-state.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/game.js"></script>
   <script src="js/storage.js"></script>

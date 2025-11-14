@@ -12,10 +12,14 @@ const L = {
     equipment: {
       woodenSword: { name: "나무 검", description: "공격력 +3" },
       ironSword: { name: "철 검", description: "공격력 +7" },
+      silverSword: { name: "은검", description: "공격력 +12" },
       leatherArmor: { name: "가죽 갑옷", description: "방어력 +2, HP +10" },
       ironArmor: { name: "철 갑옷", description: "방어력 +4, HP +20" },
-      steelShield: { name: "강철 방패", description: "방어력 +6, HP +30" },
-      wizardRobe: { name: "마법사의 로브", description: "방어력 +1, HP +50" }
+      plateArmor: { name: "판금 갑옷", description: "방어력 +8, HP +40" },
+      beginnerGloves: { name: "초보자용 장갑", description: "공격력 +1, 방어력 +1" },
+      ironGauntlets: { name: "철제 건틀릿", description: "공격력 +3, 방어력 +2" },
+      beginnerBoots: { name: "초보자용 신발", description: "방어력 +1, HP +5" },
+      ironGreaves: { name: "철제 그리브", description: "방어력 +2, HP +15" }
     },
 
     // HTML data-lang
@@ -27,7 +31,9 @@ const L = {
     heal: "💊 회복",
     save: "💾 저장",
     equip: "🎒 장비",
+    fight_again: "⚔️ 다시 싸우기",
     next_enemy: "➡ 다음 적",
+    start_battle: "⚔️ 전투 시작",
     restart: "♻ 처음부터",
     footer_tip: "TIP: 공격/회복만으로도 클리어 가능! 코드 수정해서 직접 확장해보세요 🙂",
     levelup_title: "레벨업!",
@@ -60,7 +66,8 @@ const L = {
     log_player_attack: (enemyName, dmg) => `용사의 공격! ${enemyName}에게 ${dmg}의 피해!`,
     log_enemy_defeated: (enemyName, exp) => `${enemyName} 을(를) 물리쳤다! 경험치 +${exp}`,
     log_levelup: (level) => `레벨 ${level}로 상승했습니다!`,
-    log_next_stage: "▶ '다음 적' 버튼으로 다음 스테이지로!",
+    log_next_stage: "▶️ 다음 스테이지로 진행합니다.",
+    log_repeat_stage: "⚔️ 같은 적과 다시 싸우거나 다음으로 진행할 수 있습니다.",
     log_no_heal: "더 이상 회복할 수 없습니다!",
     log_player_heal: (healed, healCount) => `용사가 회복했다! HP를 ${healed} 회복. (남은 회복: ${healCount}회)`,
     log_enemy_attack: (enemyName, dmg) => `${enemyName} 의 공격! 용사에게 ${dmg}의 피해!`,
@@ -96,10 +103,14 @@ const L = {
     equipment: {
       woodenSword: { name: "Wooden Sword", description: "ATK +3" },
       ironSword: { name: "Iron Sword", description: "ATK +7" },
+      silverSword: { name: "Silver Sword", description: "ATK +12" },
       leatherArmor: { name: "Leather Armor", description: "DEF +2, HP +10" },
       ironArmor: { name: "Iron Armor", description: "DEF +4, HP +20" },
-      steelShield: { name: "Steel Shield", description: "DEF +6, HP +30" },
-      wizardRobe: { name: "Wizard's Robe", description: "DEF +1, HP +50" }
+      plateArmor: { name: "Plate Armor", description: "DEF +8, HP +40" },
+      beginnerGloves: { name: "Beginner's Gloves", description: "ATK +1, DEF +1" },
+      ironGauntlets: { name: "Iron Gauntlets", description: "ATK +3, DEF +2" },
+      beginnerBoots: { name: "Beginner's Boots", description: "DEF +1, HP +5" },
+      ironGreaves: { name: "Iron Greaves", description: "DEF +2, HP +15" }
     },
 
     // HTML data-lang
@@ -111,7 +122,9 @@ const L = {
     heal: "💊 Heal",
     save: "💾 Save",
     equip: "🎒 Equip",
+    fight_again: "⚔️ Fight Again",
     next_enemy: "➡ Next Enemy",
+    start_battle: "⚔️ Start Battle",
     restart: "♻ Restart",
     footer_tip: "TIP: You can clear the game with only attack/heal! Try extending it by modifying the code 🙂",
     levelup_title: "Level Up!",
@@ -144,7 +157,8 @@ const L = {
     log_player_attack: (enemyName, dmg) => `Hero's attack! Dealt ${dmg} damage to ${enemyName}!`,
     log_enemy_defeated: (enemyName, exp) => `Defeated ${enemyName}! Gained +${exp} EXP.`,
     log_levelup: (level) => `Leveled up to Level ${level}!`,
-    log_next_stage: "▶ Proceed to the next stage with the 'Next Enemy' button!",
+    log_next_stage: "▶️ Proceeding to the next stage.",
+    log_repeat_stage: "⚔️ You can fight the same enemy again or proceed to the next.",
     log_no_heal: "Cannot heal anymore!",
     log_player_heal: (healed, healCount) => `The hero recovered! Restored ${healed} HP. (Heals left: ${healCount})`,
     log_enemy_attack: (enemyName, dmg) => `${enemyName}'s attack! The hero took ${dmg} damage!`,

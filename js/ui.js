@@ -4,6 +4,7 @@ const heroNameEl = document.getElementById("heroName");
 const heroAvatarEl = document.getElementById("heroAvatar");
 const heroHpTextEl = document.getElementById("heroHpText");
 const heroHpFillEl = document.getElementById("heroHpFill");
+const heroExpFill = document.getElementById("heroExpFill");
 const heroAtkTextEl = document.getElementById("heroAtkText");
 const heroDefTextEl = document.getElementById("heroDefText");
 
@@ -33,23 +34,24 @@ const equipBtn = document.getElementById("equipBtn");
 const closeEquipBtn = document.getElementById("closeEquipBtn");
 const currentWeaponEl = document.getElementById("currentWeapon");
 const currentArmorEl = document.getElementById("currentArmor");
+const currentGlovesEl = document.getElementById("currentGloves");
+const currentBootsEl = document.getElementById("currentBoots");
 const equipmentList = document.getElementById("equipmentList");
 
 const saveBtn = document.getElementById("saveBtn");
+const stageSelector = document.getElementById("stageSelector");
+const startBattleBtn = document.getElementById("startBattleBtn");
 
 // ===== 유틸 함수 =====
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 function clamp(num, min, max) {
   return Math.max(min, Math.min(num, max));
 }
-
 function setHpBar(fillEl, current, max, isDamage = false) {
   const ratio = clamp(current / max, 0, 1);
   fillEl.style.transform = `scaleX(${ratio})`;
-
   if (isDamage) {
     fillEl.classList.add("damage");
     setTimeout(() => {
@@ -57,52 +59,55 @@ function setHpBar(fillEl, current, max, isDamage = false) {
     }, 500);
   }
 }
-
 function log(message, type = "system", icon = null) {
   const line = document.createElement("div");
   line.className = `log-line ${type}`;
-  
   const turnSpan = `<span style="color: #9ca3af; font-size: 11px; margin-right: 8px;">[T${turn}]</span>`;
   const iconSpan = icon ? `<span style="margin-right: 6px;">${icon}</span>` : "";
-  
   line.innerHTML = `${turnSpan}${iconSpan}${message}`;
   logEl.appendChild(line);
   logEl.scrollTop = logEl.scrollHeight;
 }
-
 function playAnimation(element, animationClass) {
   element.classList.add(animationClass);
   setTimeout(() => {
     element.classList.remove(animationClass);
   }, 500); // 애니메이션 지속 시간
 }
-
 // ===== UI 업데이트 함수 =====
 function updateUI() {
   // 장비 보너스 계산
-  const weaponBonus = hero.equipment.weapon ? equipment.find(e => e.id === hero.equipment.weapon) : null;
-  const armorBonus = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
+  const weapon = hero.equipment.weapon ? equipment.find(e => e.id === hero.equipment.weapon) : null;
+  const armor = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
+  const gloves = hero.equipment.gloves ? equipment.find(e => e.id === hero.equipment.gloves) : null;
+  const boots = hero.equipment.boots ? equipment.find(e => e.id === hero.equipment.boots) : null;
 
-  const totalAtk = hero.minAtk + (weaponBonus ? weaponBonus.atkBonus : 0);
-  const totalMaxAtk = hero.maxAtk + (weaponBonus ? weaponBonus.atkBonus : 0);
-  const totalDef = hero.def + (armorBonus ? armorBonus.defBonus : 0);
-  const totalHp = hero.maxHp + (armorBonus ? armorBonus.hpBonus : 0);
+  let totalAtkBonus = (weapon?.atkBonus || 0) + (gloves?.atkBonus || 0) + (boots?.atkBonus || 0);
+  let totalDefBonus = (armor?.defBonus || 0) + (gloves?.defBonus || 0) + (boots?.defBonus || 0);
+  let totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
+
+  const totalAtk = hero.minAtk + totalAtkBonus;
+  const totalMaxAtk = hero.maxAtk + totalAtkBonus;
+  const totalDef = hero.def + totalDefBonus;
+  const totalHp = hero.maxHp + totalHpBonus;
 
   const lang = L[currentLang];
 
   // Hero
   heroNameEl.textContent = lang.hero_name(hero.name, hero.level);
   heroAvatarEl.textContent = hero.avatar;
-  heroHpTextEl.textContent = lang.hero_hp(hero.hp, totalHp, hero.healCount);
+  heroHpTextEl.textContent = `${hero.hp} / ${totalHp}`;
   heroAtkTextEl.textContent = lang.hero_atk(totalAtk, totalMaxAtk);
   heroDefTextEl.textContent = lang.hero_def(totalDef);
   setHpBar(heroHpFillEl, hero.hp, totalHp);
+  const expRatio = clamp(hero.exp / hero.expToNext, 0, 1);
+  heroExpFill.style.transform = `scaleX(${expRatio})`;
 
   // Enemy
   if (currentEnemy) {
     enemyNameEl.textContent = currentEnemy.name;
     enemyAvatarEl.textContent = currentEnemy.avatar;
-    enemyHpTextEl.textContent = lang.enemy_hp(currentEnemy.hp, currentEnemy.maxHp);
+    enemyHpTextEl.textContent = `${currentEnemy.hp} / ${currentEnemy.maxHp}`;
     enemyAtkTextEl.textContent = lang.enemy_atk(currentEnemy.minAtk, currentEnemy.maxAtk);
     enemyDefTextEl.textContent = lang.enemy_def(currentEnemy.def);
     setHpBar(enemyHpFillEl, currentEnemy.hp, currentEnemy.maxHp);
@@ -119,22 +124,36 @@ function updateUI() {
 
   // 스킬 버튼 업데이트
   updateSkillButtons();
-
   // 아이템 버튼 업데이트
   updateItemButtons();
+  // 스테이지 선택기 업데이트
+  updateStageSelector();
 
   // 버튼 상태
-  attackBtn.disabled = gameOver || !currentEnemy || !isPlayerTurn;
-  healBtn.disabled =
-    gameOver || !currentEnemy || !isPlayerTurn || hero.healCount <= 0;
-  nextBtn.disabled = gameOver || !!currentEnemy; // 적이 없을 때만
+  const isInCombat = currentEnemy && !gameOver;
+  attackBtn.disabled = !isInCombat || !isPlayerTurn;
+  healBtn.disabled = !isInCombat || !isPlayerTurn || hero.healCount <= 0;
+  startBattleBtn.disabled = isInCombat || gameOver;
+}
+
+// ===== 스테이지 선택기 업데이트 =====
+function updateStageSelector() {
+  const lang = L[currentLang];
+  const maxStage = Math.min(hero.maxStageCleared + 1, enemies.length - 1);
+  stageSelector.innerHTML = "";
+  for (let i = 0; i <= maxStage; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = lang.current_stage(i + 1);
+    stageSelector.appendChild(option);
+  }
+  stageSelector.value = currentEnemyIndex;
 }
 
 // ===== 스킬/아이템 버튼 관리 =====
 function updateSkillButtons() {
   skillControls.innerHTML = "";
   const lang = L[currentLang];
-
   skills.forEach(skill => {
     const skillInfo = lang.skills[skill.id];
     const btn = document.createElement("button");
@@ -142,7 +161,6 @@ function updateSkillButtons() {
     btn.style.flex = "1";
     btn.style.minWidth = "80px";
     btn.textContent = `${skill.icon} ${skillInfo.name}`;
-
     // 쿨다운 표시
     if (skill.currentCooldown > 0) {
       btn.textContent += ` (${skill.currentCooldown})`;
@@ -150,21 +168,17 @@ function updateSkillButtons() {
     } else {
       btn.disabled = gameOver || !currentEnemy || !isPlayerTurn;
     }
-
     btn.title = skillInfo.description;
     btn.addEventListener("click", () => useSkill(skill));
     skillControls.appendChild(btn);
   });
 }
-
 function updateItemButtons() {
   itemControls.innerHTML = "";
   const lang = L[currentLang];
-
   items.forEach(item => {
     if (item.count <= 0) return; // 아이템이 없으면 표시하지 않음
     const itemInfo = lang.items[item.id];
-
     const btn = document.createElement("button");
     btn.className = "secondary";
     btn.style.flex = "1";
@@ -181,15 +195,12 @@ function updateItemButtons() {
 function showLevelUpModal() {
   remainingPointsEl.textContent = hero.statPoints;
   levelUpModal.style.display = "flex";
-
   // 버튼 이벤트 설정
   atkUpBtn.onclick = () => allocateStat("atk");
   defUpBtn.onclick = () => allocateStat("def");
   hpUpBtn.onclick = () => allocateStat("hp");
-
   updateLevelUpButtons();
 }
-
 function updateLevelUpButtons() {
   atkUpBtn.disabled = hero.statPoints <= 0;
   defUpBtn.disabled = hero.statPoints <= 0;
@@ -199,14 +210,15 @@ function updateLevelUpButtons() {
 function showEquipModal() {
   const lang = L[currentLang];
   // 현재 장비 표시
-  const weaponId = hero.equipment.weapon;
-  const armorId = hero.equipment.armor;
-  const weapon = weaponId ? lang.equipment[weaponId] : null;
-  const armor = armorId ? lang.equipment[armorId] : null;
-
+  const weapon = hero.equipment.weapon ? lang.equipment[hero.equipment.weapon] : null;
+  const armor = hero.equipment.armor ? lang.equipment[hero.equipment.armor] : null;
+  const gloves = hero.equipment.gloves ? lang.equipment[hero.equipment.gloves] : null;
+  const boots = hero.equipment.boots ? lang.equipment[hero.equipment.boots] : null;
 
   currentWeaponEl.textContent = weapon ? weapon.name : lang.equip_none;
   currentArmorEl.textContent = armor ? armor.name : lang.equip_none;
+  currentGlovesEl.textContent = gloves ? gloves.name : lang.equip_none;
+  currentBootsEl.textContent = boots ? boots.name : lang.equip_none;
 
   // 장비 리스트 표시 (인벤토리에 있는 아이템만)
   equipmentList.innerHTML = "";
@@ -214,7 +226,6 @@ function showEquipModal() {
     const item = equipment.find(e => e.id === itemId);
     if (!item) return;
     const itemInfo = lang.equipment[item.id];
-
     const itemDiv = document.createElement("div");
     itemDiv.style.display = "flex";
     itemDiv.style.justifyContent = "space-between";
@@ -223,18 +234,16 @@ function showEquipModal() {
     itemDiv.style.marginBottom = "5px";
     itemDiv.style.background = "rgba(0,0,0,0.3)";
     itemDiv.style.borderRadius = "6px";
-
     const infoDiv = document.createElement("div");
     infoDiv.innerHTML = `${item.icon} ${itemInfo.name}<br><small style="color: #9ca3af;">${itemInfo.description}</small>`;
-
     const equipBtn = document.createElement("button");
     equipBtn.className = "secondary";
     equipBtn.style.padding = "4px 8px";
     equipBtn.style.fontSize = "12px";
-
     const isEquipped = (item.type === "weapon" && hero.equipment.weapon === item.id) ||
-                      (item.type === "armor" && hero.equipment.armor === item.id);
-
+                      (item.type === "armor" && hero.equipment.armor === item.id) ||
+                      (item.type === "gloves" && hero.equipment.gloves === item.id) ||
+                      (item.type === "boots" && hero.equipment.boots === item.id);
     if (isEquipped) {
       equipBtn.textContent = lang.equip_equipped;
       equipBtn.disabled = true;
@@ -242,12 +251,10 @@ function showEquipModal() {
       equipBtn.textContent = lang.equip_equip;
       equipBtn.onclick = () => equipItem(item);
     }
-
     itemDiv.appendChild(infoDiv);
     itemDiv.appendChild(equipBtn);
     equipmentList.appendChild(itemDiv);
   });
-
   equipModal.style.display = "flex";
 }
 

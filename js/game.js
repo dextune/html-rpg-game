@@ -72,13 +72,20 @@ function playerAttack() {
       return;
     }
 
-    currentEnemy = null;
-    currentEnemyIndex++;
+    // 전투 종료 후 HP 회복
+    const armor = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
+    const gloves = hero.equipment.gloves ? equipment.find(e => e.id === hero.equipment.gloves) : null;
+    const boots = hero.equipment.boots ? equipment.find(e => e.id === hero.equipment.boots) : null;
+    let totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
+    hero.hp = hero.maxHp + totalHpBonus;
 
-    if (currentEnemyIndex >= enemies.length) {
+    hero.maxStageCleared = Math.max(hero.maxStageCleared, currentEnemyIndex);
+    currentEnemy = null;
+
+    if (currentEnemyIndex >= enemies.length -1) {
       gameClear();
     } else {
-      log(L[currentLang].log_next_stage, "system", "▶️");
+      log(L[currentLang].log_repeat_stage, "system", "⚔️");
       updateUI();
     }
     return;
@@ -240,13 +247,20 @@ function useSkill(skill) {
       return;
     }
 
-    currentEnemy = null;
-    currentEnemyIndex++;
+    // 전투 종료 후 HP 회복
+    const armor = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
+    const gloves = hero.equipment.gloves ? equipment.find(e => e.id === hero.equipment.gloves) : null;
+    const boots = hero.equipment.boots ? equipment.find(e => e.id === hero.equipment.boots) : null;
+    let totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
+    hero.hp = hero.maxHp + totalHpBonus;
 
-    if (currentEnemyIndex >= enemies.length) {
+    hero.maxStageCleared = Math.max(hero.maxStageCleared, currentEnemyIndex);
+    currentEnemy = null;
+
+    if (currentEnemyIndex >= enemies.length -1) {
       gameClear();
     } else {
-      log(L[currentLang].log_next_stage, "system", "▶️");
+      log(L[currentLang].log_repeat_stage, "system", "⚔️");
       updateUI();
     }
     return;
@@ -349,6 +363,10 @@ function equipItem(item) {
     hero.equipment.weapon = item.id;
   } else if (item.type === "armor") {
     hero.equipment.armor = item.id;
+  } else if (item.type === "gloves") {
+    hero.equipment.gloves = item.id;
+  } else if (item.type === "boots") {
+    hero.equipment.boots = item.id;
   }
   log(L[currentLang].log_equip_item(itemInfo.name), "system", "🎒");
   updateUI();

@@ -12,10 +12,9 @@ function setupEventListeners() {
   document.getElementById("lang-ko").addEventListener("click", () => setLanguage("ko"));
   document.getElementById("lang-en").addEventListener("click", () => setLanguage("en"));
 
-  nextBtn.addEventListener("click", () => {
-    if (gameOver) return;
-    if (currentEnemy) return;
-    if (currentEnemyIndex >= enemies.length) return;
+  startBattleBtn.addEventListener("click", () => {
+    if (gameOver || currentEnemy) return;
+    currentEnemyIndex = parseInt(stageSelector.value);
     spawnEnemy();
   });
 
@@ -27,6 +26,7 @@ function setupEventListeners() {
     hero.exp = 0;
     hero.expToNext = 50;
     hero.statPoints = 0;
+    hero.maxStageCleared = 0;
     hero.minAtk = 10;
     hero.maxAtk = 20;
     hero.def = 2;
@@ -34,6 +34,7 @@ function setupEventListeners() {
     currentEnemy = null;
     gameOver = false;
     isPlayerTurn = true;
+    turn = 1;
     // 스킬 쿨다운 초기화
     skills.forEach(skill => {
       skill.currentCooldown = 0;
@@ -46,7 +47,9 @@ function setupEventListeners() {
     // 장비 초기화
     hero.equipment.weapon = null;
     hero.equipment.armor = null;
-    hero.inventory = ["woodenSword", "leatherArmor"];
+    hero.equipment.gloves = null;
+    hero.equipment.boots = null;
+    hero.inventory = ["woodenSword", "leatherArmor", "beginnerGloves", "beginnerBoots"];
     logEl.innerHTML = "";
     log(L[currentLang].log_new_adventure, "system", "🔄");
     spawnEnemy();

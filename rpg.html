@@ -67,7 +67,7 @@
         </div>
         <div id="game-actions" class="sub-controls">
           <button id="saveBtn" class="secondary" data-lang="save">💾 저장</button>
-          <button id="equipBtn" class="secondary" data-lang="equip">🎒 장비</button>
+          <button id="statusBtn" class="secondary" data-lang="status">📊 상태</button>
           <select id="stageSelector" class="secondary"></select>
           <button id="startBattleBtn" data-lang="start_battle">⚔️ 전투 시작</button>
           <button id="resetBtn" class="danger" data-lang="restart">♻ 처음부터</button>
@@ -80,7 +80,7 @@
       <div class="footer-hint" data-lang="footer_tip">TIP: 공격/회복만으로도 클리어 가능! 코드 수정해서 직접 확장해보세요 🙂</div>
     </footer>
 
-    <!-- Modals remain unchanged -->
+    <!-- Modals -->
     <div id="levelUpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
       <div style="background: rgba(15, 15, 20, 0.95); border-radius: 18px; padding: 20px; width: 300px; border: 1px solid rgba(255, 255, 255, 0.08);">
         <h3 style="margin: 0 0 15px; text-align: center; color: #facc15;" data-lang="levelup_title">레벨업!</h3>
@@ -94,9 +94,24 @@
       </div>
     </div>
 
-    <div id="equipModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
-      <div style="background: rgba(15, 15, 20, 0.95); border-radius: 18px; padding: 20px; width: 350px; border: 1px solid rgba(255, 255, 255, 0.08);">
-        <h3 style="margin: 0 0 15px; text-align: center; color: #facc15;" data-lang="equip_title">장비</h3>
+    <div id="statusModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: rgba(15, 15, 20, 0.95); border-radius: 18px; padding: 20px; width: 400px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <h3 style="margin: 0 0 15px; text-align: center; color: #facc15;" data-lang="status_title">상태 정보</h3>
+        
+        <!-- 캐릭터 능력치 -->
+        <div style="margin-bottom: 20px;">
+          <h4 style="margin: 0 0 10px; font-size: 14px;" data-lang="status_stats">캐릭터 능력치</h4>
+          <div id="status-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+            <div id="statusLevel">레벨: 1</div>
+            <div id="statusExp">경험치: 0 / 50</div>
+            <div id="statusHp">HP: 50 / 50</div>
+            <div id="statusHeal">회복: 3회</div>
+            <div id="statusAtk">공격력: 10 ~ 20</div>
+            <div id="statusDef">방어력: 2</div>
+          </div>
+        </div>
+
+        <!-- 현재 장비 -->
         <div style="margin-bottom: 15px;">
           <h4 style="margin: 0 0 10px; font-size: 14px;" data-lang="equip_current">현재 장비</h4>
           <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -121,7 +136,23 @@
         <div id="equipmentList">
           <!-- 장비 아이템들은 JavaScript로 동적으로 추가됨 -->
         </div>
-        <button id="closeEquipBtn" style="width: 100%; margin-top: 15px;" data-lang="equip_close">닫기</button>
+
+        <!-- 스킬 관리 -->
+        <div style="margin-top: 20px;">
+          <h4 style="margin: 0 0 10px; font-size: 14px;" data-lang="status_skills">스킬 관리</h4>
+          <div id="skill-management">
+            <div>
+              <h5 style="margin: 0 0 5px; font-size: 13px;" data-lang="status_active_skills">사용 스킬</h5>
+              <div id="activeSkillsList" style="display: flex; flex-direction: column; gap: 5px;"></div>
+            </div>
+            <div style="margin-top: 15px;">
+              <h5 style="margin: 0 0 5px; font-size: 13px;" data-lang="status_learned_skills">보유 스킬</h5>
+              <div id="learnedSkillsList" style="display: flex; flex-direction: column; gap: 5px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <button id="closeStatusBtn" style="width: 100%; margin-top: 15px;" data-lang="equip_close">닫기</button>
       </div>
     </div>
   </div>

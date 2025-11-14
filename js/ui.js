@@ -17,7 +17,6 @@ const enemyDefTextEl = document.getElementById("enemyDefText");
 
 const attackBtn = document.getElementById("attackBtn");
 const healBtn = document.getElementById("healBtn");
-const nextBtn = document.getElementById("nextBtn");
 const resetBtn = document.getElementById("resetBtn");
 const logEl = document.getElementById("log");
 const skillControls = document.getElementById("skillControls");
@@ -29,14 +28,23 @@ const defUpBtn = document.getElementById("defUpBtn");
 const hpUpBtn = document.getElementById("hpUpBtn");
 const remainingPointsEl = document.getElementById("remainingPoints");
 
-const equipModal = document.getElementById("equipModal");
-const equipBtn = document.getElementById("equipBtn");
-const closeEquipBtn = document.getElementById("closeEquipBtn");
+const statusModal = document.getElementById("statusModal");
+const statusBtn = document.getElementById("statusBtn");
+const closeStatusBtn = document.getElementById("closeStatusBtn");
 const currentWeaponEl = document.getElementById("currentWeapon");
 const currentArmorEl = document.getElementById("currentArmor");
 const currentGlovesEl = document.getElementById("currentGloves");
 const currentBootsEl = document.getElementById("currentBoots");
 const equipmentList = document.getElementById("equipmentList");
+
+const statusLevel = document.getElementById("statusLevel");
+const statusExp = document.getElementById("statusExp");
+const statusHp = document.getElementById("statusHp");
+const statusHeal = document.getElementById("statusHeal");
+const statusAtk = document.getElementById("statusAtk");
+const statusDef = document.getElementById("statusDef");
+const activeSkillsList = document.getElementById("activeSkillsList");
+const learnedSkillsList = document.getElementById("learnedSkillsList");
 
 const saveBtn = document.getElementById("saveBtn");
 const stageSelector = document.getElementById("stageSelector");
@@ -74,32 +82,37 @@ function playAnimation(element, animationClass) {
     element.classList.remove(animationClass);
   }, 500); // 애니메이션 지속 시간
 }
-// ===== UI 업데이트 함수 =====
-function updateUI() {
-  // 장비 보너스 계산
+
+function getHeroTotalStats() {
   const weapon = hero.equipment.weapon ? equipment.find(e => e.id === hero.equipment.weapon) : null;
   const armor = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
   const gloves = hero.equipment.gloves ? equipment.find(e => e.id === hero.equipment.gloves) : null;
   const boots = hero.equipment.boots ? equipment.find(e => e.id === hero.equipment.boots) : null;
 
-  let totalAtkBonus = (weapon?.atkBonus || 0) + (gloves?.atkBonus || 0) + (boots?.atkBonus || 0);
-  let totalDefBonus = (armor?.defBonus || 0) + (gloves?.defBonus || 0) + (boots?.defBonus || 0);
-  let totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
+  const totalAtkBonus = (weapon?.atkBonus || 0) + (gloves?.atkBonus || 0) + (boots?.atkBonus || 0);
+  const totalDefBonus = (armor?.defBonus || 0) + (gloves?.defBonus || 0) + (boots?.defBonus || 0);
+  const totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
 
-  const totalAtk = hero.minAtk + totalAtkBonus;
-  const totalMaxAtk = hero.maxAtk + totalAtkBonus;
-  const totalDef = hero.def + totalDefBonus;
-  const totalHp = hero.maxHp + totalHpBonus;
+  return {
+    atk: hero.minAtk + totalAtkBonus,
+    maxAtk: hero.maxAtk + totalAtkBonus,
+    def: hero.def + totalDefBonus,
+    maxHp: hero.maxHp + totalHpBonus,
+  };
+}
 
+// ===== UI 업데이트 함수 =====
+function updateUI() {
   const lang = L[currentLang];
+  const totalStats = getHeroTotalStats();
 
   // Hero
   heroNameEl.textContent = lang.hero_name(hero.name, hero.level);
   heroAvatarEl.textContent = hero.avatar;
-  heroHpTextEl.textContent = `${hero.hp} / ${totalHp}`;
-  heroAtkTextEl.textContent = lang.hero_atk(totalAtk, totalMaxAtk);
-  heroDefTextEl.textContent = lang.hero_def(totalDef);
-  setHpBar(heroHpFillEl, hero.hp, totalHp);
+  heroHpTextEl.textContent = `${hero.hp} / ${totalStats.maxHp}`;
+  heroAtkTextEl.textContent = lang.hero_atk(totalStats.atk, totalStats.maxAtk);
+  heroDefTextEl.textContent = lang.hero_def(totalStats.def);
+  setHpBar(heroHpFillEl, hero.hp, totalStats.maxHp);
   const expRatio = clamp(hero.exp / hero.expToNext, 0, 1);
   heroExpFill.style.transform = `scaleX(${expRatio})`;
 
@@ -154,14 +167,18 @@ function updateStageSelector() {
 function updateSkillButtons() {
   skillControls.innerHTML = "";
   const lang = L[currentLang];
-  skills.forEach(skill => {
+  hero.activeSkills.forEach(skillId => {
+    if (!skillId) return;
+    const skill = skills.find(s => s.id === skillId);
+    if (!skill) return;
+
     const skillInfo = lang.skills[skill.id];
     const btn = document.createElement("button");
     btn.className = "secondary";
     btn.style.flex = "1";
     btn.style.minWidth = "80px";
     btn.textContent = `${skill.icon} ${skillInfo.name}`;
-    // 쿨다운 표시
+    
     if (skill.currentCooldown > 0) {
       btn.textContent += ` (${skill.currentCooldown})`;
       btn.disabled = true;
@@ -177,7 +194,7 @@ function updateItemButtons() {
   itemControls.innerHTML = "";
   const lang = L[currentLang];
   items.forEach(item => {
-    if (item.count <= 0) return; // 아이템이 없으면 표시하지 않음
+    if (item.count <= 0) return;
     const itemInfo = lang.items[item.id];
     const btn = document.createElement("button");
     btn.className = "secondary";
@@ -195,7 +212,6 @@ function updateItemButtons() {
 function showLevelUpModal() {
   remainingPointsEl.textContent = hero.statPoints;
   levelUpModal.style.display = "flex";
-  // 버튼 이벤트 설정
   atkUpBtn.onclick = () => allocateStat("atk");
   defUpBtn.onclick = () => allocateStat("def");
   hpUpBtn.onclick = () => allocateStat("hp");
@@ -207,8 +223,18 @@ function updateLevelUpButtons() {
   hpUpBtn.disabled = hero.statPoints <= 0;
 }
 
-function showEquipModal() {
+function showStatusModal() {
   const lang = L[currentLang];
+  const totalStats = getHeroTotalStats();
+
+  // 능력치 정보 업데이트
+  statusLevel.textContent = `${lang.status_level}: ${hero.level}`;
+  statusExp.textContent = `${lang.status_exp}: ${hero.exp} / ${hero.expToNext}`;
+  statusHp.textContent = `${lang.status_hp}: ${hero.hp} / ${totalStats.maxHp}`;
+  statusHeal.textContent = `${lang.status_heal}: ${hero.healCount}회`;
+  statusAtk.textContent = `${lang.status_atk}: ${totalStats.atk} ~ ${totalStats.maxAtk}`;
+  statusDef.textContent = `${lang.status_def}: ${totalStats.def}`;
+
   // 현재 장비 표시
   const weapon = hero.equipment.weapon ? lang.equipment[hero.equipment.weapon] : null;
   const armor = hero.equipment.armor ? lang.equipment[hero.equipment.armor] : null;
@@ -220,30 +246,19 @@ function showEquipModal() {
   currentGlovesEl.textContent = gloves ? gloves.name : lang.equip_none;
   currentBootsEl.textContent = boots ? boots.name : lang.equip_none;
 
-  // 장비 리스트 표시 (인벤토리에 있는 아이템만)
+  // 장비 리스트 표시
   equipmentList.innerHTML = "";
   hero.inventory.forEach(itemId => {
     const item = equipment.find(e => e.id === itemId);
     if (!item) return;
     const itemInfo = lang.equipment[item.id];
     const itemDiv = document.createElement("div");
-    itemDiv.style.display = "flex";
-    itemDiv.style.justifyContent = "space-between";
-    itemDiv.style.alignItems = "center";
-    itemDiv.style.padding = "8px";
-    itemDiv.style.marginBottom = "5px";
-    itemDiv.style.background = "rgba(0,0,0,0.3)";
-    itemDiv.style.borderRadius = "6px";
+    itemDiv.className = "modal-list-item";
     const infoDiv = document.createElement("div");
-    infoDiv.innerHTML = `${item.icon} ${itemInfo.name}<br><small style="color: #9ca3af;">${itemInfo.description}</small>`;
+    infoDiv.innerHTML = `${item.icon} ${itemInfo.name}<br><small>${itemInfo.description}</small>`;
     const equipBtn = document.createElement("button");
     equipBtn.className = "secondary";
-    equipBtn.style.padding = "4px 8px";
-    equipBtn.style.fontSize = "12px";
-    const isEquipped = (item.type === "weapon" && hero.equipment.weapon === item.id) ||
-                      (item.type === "armor" && hero.equipment.armor === item.id) ||
-                      (item.type === "gloves" && hero.equipment.gloves === item.id) ||
-                      (item.type === "boots" && hero.equipment.boots === item.id);
+    const isEquipped = Object.values(hero.equipment).includes(item.id);
     if (isEquipped) {
       equipBtn.textContent = lang.equip_equipped;
       equipBtn.disabled = true;
@@ -255,7 +270,55 @@ function showEquipModal() {
     itemDiv.appendChild(equipBtn);
     equipmentList.appendChild(itemDiv);
   });
-  equipModal.style.display = "flex";
+
+  // 스킬 관리 UI 렌더링
+  activeSkillsList.innerHTML = "";
+  hero.activeSkills.forEach((skillId, index) => {
+    const skillDiv = document.createElement("div");
+    skillDiv.className = "modal-list-item";
+    const infoDiv = document.createElement("div");
+    const unequipBtn = document.createElement("button");
+    unequipBtn.className = "secondary";
+    
+    if (skillId) {
+      const skill = skills.find(s => s.id === skillId);
+      const skillInfo = lang.skills[skillId];
+      infoDiv.innerHTML = `${skill.icon} ${skillInfo.name}<br><small>${skillInfo.description}</small>`;
+      unequipBtn.textContent = lang.skill_unequip;
+      unequipBtn.onclick = () => unequipSkill(skillId, index);
+    } else {
+      infoDiv.innerHTML = `<span style="color: #6b7280;">- ${lang.equip_none} -</span>`;
+      unequipBtn.textContent = lang.skill_equip;
+      unequipBtn.disabled = true;
+    }
+    skillDiv.appendChild(infoDiv);
+    skillDiv.appendChild(unequipBtn);
+    activeSkillsList.appendChild(skillDiv);
+  });
+
+  learnedSkillsList.innerHTML = "";
+  const unequippedSkills = hero.learnedSkills.filter(id => !hero.activeSkills.includes(id));
+  unequippedSkills.forEach(skillId => {
+    const skill = skills.find(s => s.id === skillId);
+    const skillInfo = lang.skills[skillId];
+    const skillDiv = document.createElement("div");
+    skillDiv.className = "modal-list-item";
+    const infoDiv = document.createElement("div");
+    infoDiv.innerHTML = `${skill.icon} ${skillInfo.name}<br><small>${skillInfo.description}</small>`;
+    const equipBtn = document.createElement("button");
+    equipBtn.className = "secondary";
+    equipBtn.textContent = lang.skill_equip;
+    if (hero.activeSkills.includes(null)) {
+      equipBtn.onclick = () => equipSkill(skillId);
+    } else {
+      equipBtn.disabled = true;
+    }
+    skillDiv.appendChild(infoDiv);
+    skillDiv.appendChild(equipBtn);
+    learnedSkillsList.appendChild(skillDiv);
+  });
+
+  statusModal.style.display = "flex";
 }
 
 // ===== 언어 교체 함수 =====
@@ -263,22 +326,17 @@ function setLanguage(lang) {
   currentLang = lang;
   document.documentElement.lang = lang;
 
-  // data-lang 속성을 가진 모든 요소의 텍스트를 교체
   document.querySelectorAll("[data-lang]").forEach(el => {
     const key = el.getAttribute("data-lang");
-    if (L[lang][key]) {
-      el.textContent = L[lang][key];
-    }
+    if (L[lang][key]) el.textContent = L[lang][key];
   });
 
-  // data-lang-none 속성 (장비 "없음" 등)
   document.querySelectorAll("[data-lang-none]").forEach(el => {
     const key = el.getAttribute("data-lang-none");
-    if (el.textContent === L["ko"][key] || el.textContent === L["en"][key]) {
+    if (el.textContent === L["ko"][key] || el.textContent === L["en"][key] || el.textContent === "") {
       el.textContent = L[lang][key];
     }
   });
 
-  // UI 전체 업데이트
   updateUI();
 }

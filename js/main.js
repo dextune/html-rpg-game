@@ -3,9 +3,9 @@ function setupEventListeners() {
   attackBtn.addEventListener("click", playerAttack);
   healBtn.addEventListener("click", playerHeal);
   saveBtn.addEventListener("click", saveGame);
-  equipBtn.addEventListener("click", showEquipModal);
-  closeEquipBtn.addEventListener("click", () => {
-    equipModal.style.display = "none";
+  statusBtn.addEventListener("click", showStatusModal);
+  closeStatusBtn.addEventListener("click", () => {
+    statusModal.style.display = "none";
   });
 
   // 언어 변경 버튼
@@ -50,6 +50,9 @@ function setupEventListeners() {
     hero.equipment.gloves = null;
     hero.equipment.boots = null;
     hero.inventory = ["woodenSword", "leatherArmor", "beginnerGloves", "beginnerBoots"];
+    // 스킬 초기화
+    hero.learnedSkills = ["powerStrike"];
+    hero.activeSkills = ["powerStrike", null];
     logEl.innerHTML = "";
     log(L[currentLang].log_new_adventure, "system", "🔄");
     spawnEnemy();

@@ -263,3 +263,24 @@ button:disabled {
 .log::-webkit-scrollbar-track { background: transparent; }
 .log::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 999px; }
 .log::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+/* Modal-specific list item styles */
+.modal-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 5px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+}
+
+.modal-list-item small {
+  color: #9ca3af;
+}
+
+.modal-list-item button {
+  padding: 4px 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+}

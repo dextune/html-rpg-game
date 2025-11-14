@@ -20,5 +20,7 @@ const hero = {
     gloves: null,
     boots: null
   },
-  inventory: ["woodenSword", "leatherArmor", "beginnerGloves", "beginnerBoots"] // 획득한 아이템 목록
+  inventory: ["woodenSword", "leatherArmor", "beginnerGloves", "beginnerBoots"], // 획득한 아이템 목록
+  learnedSkills: ["powerStrike"],
+  activeSkills: ["powerStrike", null]
 };

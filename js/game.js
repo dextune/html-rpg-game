@@ -29,7 +29,8 @@ function playerAttack() {
 
   playAnimation(heroAvatarEl, "attack-animation");
 
-  const rawDmg = randInt(hero.minAtk, hero.maxAtk);
+  const totalStats = getHeroTotalStats();
+  const rawDmg = randInt(totalStats.atk, totalStats.maxAtk);
   const dmg = clamp(rawDmg - currentEnemy.def, 1, 999);
   currentEnemy.hp = clamp(currentEnemy.hp - dmg, 0, currentEnemy.maxHp);
   log(L[currentLang].log_player_attack(currentEnemy.name, dmg), "hero", "⚔️");
@@ -41,7 +42,7 @@ function playerAttack() {
   }, 150);
 
   if (currentEnemy.hp <= 0) {
-    const expGained = currentEnemyIndex + 1 * 10;
+    const expGained = (currentEnemyIndex + 1) * 10;
     hero.exp += expGained;
     log(L[currentLang].log_enemy_defeated(currentEnemy.name, expGained), "system", "⭐");
 
@@ -73,11 +74,8 @@ function playerAttack() {
     }
 
     // 전투 종료 후 HP 회복
-    const armor = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
-    const gloves = hero.equipment.gloves ? equipment.find(e => e.id === hero.equipment.gloves) : null;
-    const boots = hero.equipment.boots ? equipment.find(e => e.id === hero.equipment.boots) : null;
-    let totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
-    hero.hp = hero.maxHp + totalHpBonus;
+    const totalStats = getHeroTotalStats();
+    hero.hp = totalStats.maxHp;
 
     hero.maxStageCleared = Math.max(hero.maxStageCleared, currentEnemyIndex);
     currentEnemy = null;
@@ -104,8 +102,9 @@ function playerHeal() {
   }
 
   hero.healCount--;
-  const healed = clamp(hero.healAmount, 0, hero.maxHp - hero.hp);
-  hero.hp = clamp(hero.hp + healed, 0, hero.maxHp);
+  const totalStats = getHeroTotalStats();
+  const healed = clamp(hero.healAmount, 0, totalStats.maxHp - hero.hp);
+  hero.hp = clamp(hero.hp + healed, 0, totalStats.maxHp);
   log(L[currentLang].log_player_heal(healed, hero.healCount), "hero", "❤️");
 
   playAnimation(heroAvatarEl, "heal-animation");
@@ -121,16 +120,15 @@ function enemyAttack() {
 
   const performAttack = (isSecondAttack = false) => {
     playAnimation(enemyAvatarEl, "attack-animation");
+    const totalStats = getHeroTotalStats();
     const rawDmg = randInt(currentEnemy.minAtk, currentEnemy.maxAtk);
-    const dmg = clamp(rawDmg - hero.def, 1, 999);
-    hero.hp = clamp(hero.hp - dmg, 0, hero.maxHp);
+    const dmg = clamp(rawDmg - totalStats.def, 1, 999);
+    hero.hp = clamp(hero.hp - dmg, 0, totalStats.maxHp);
     log(L[currentLang].log_enemy_attack(currentEnemy.name, dmg), "enemy", "⚔️");
 
     setTimeout(() => {
       playAnimation(heroAvatarEl, "damage-animation");
-      const armorBonus = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
-      const totalHp = hero.maxHp + (armorBonus ? armorBonus.hpBonus : 0);
-      setHpBar(heroHpFillEl, hero.hp, totalHp, true);
+      setHpBar(heroHpFillEl, hero.hp, totalStats.maxHp, true);
       updateUI();
     }, 150);
 
@@ -189,19 +187,31 @@ function useSkill(skill) {
 
   skill.currentCooldown = skill.cooldown;
   const skillInfo = L[currentLang].skills[skill.id];
+  const totalStats = getHeroTotalStats();
+
+  const executeEffect = (isSecondHit = false) => {
+    if (skill.effect === "damage") {
+      if (!isSecondHit) playAnimation(heroAvatarEl, "attack-animation");
+      
+      const rawDmg = randInt(totalStats.atk, totalStats.maxAtk) * skill.multiplier;
+      const dmg = skill.ignoreDef ? Math.round(rawDmg) : clamp(Math.round(rawDmg) - currentEnemy.def, 1, 999);
+      currentEnemy.hp = clamp(currentEnemy.hp - dmg, 0, currentEnemy.maxHp);
+      log(L[currentLang].log_use_skill(skillInfo.name, currentEnemy.name, dmg), "hero", "💥");
+
+      setTimeout(() => {
+        playAnimation(enemyAvatarEl, "damage-animation");
+        setHpBar(enemyHpFillEl, currentEnemy.hp, currentEnemy.maxHp, true);
+      }, 150);
+    }
+  };
 
   if (skill.effect === "damage") {
-    playAnimation(heroAvatarEl, "attack-animation");
-
-    const rawDmg = randInt(hero.minAtk, hero.maxAtk) * skill.multiplier;
-    const dmg = skill.ignoreDef ? rawDmg : clamp(rawDmg - currentEnemy.def, 1, 999);
-    currentEnemy.hp = clamp(currentEnemy.hp - dmg, 0, currentEnemy.maxHp);
-    log(L[currentLang].log_use_skill(skillInfo.name, currentEnemy.name, dmg), "hero", "💥");
-
-    setTimeout(() => {
-      playAnimation(enemyAvatarEl, "damage-animation");
-      setHpBar(enemyHpFillEl, currentEnemy.hp, currentEnemy.maxHp, true);
-    }, 150);
+    executeEffect();
+    if (skill.hits === 2) {
+      setTimeout(() => {
+        if (currentEnemy.hp > 0) executeEffect(true);
+      }, 400);
+    }
   } else if (skill.effect === "debuff") {
     if (skill.debuffType === "def") {
       currentEnemy.def = clamp(currentEnemy.def + skill.debuffValue, 0, 999);
@@ -211,12 +221,27 @@ function useSkill(skill) {
         log(L[currentLang].log_debuff_expired(currentEnemy.name), "system", "⚙️");
       }, skill.debuffDuration * 1000);
     }
+  } else if (skill.effect === "buff") {
+    if (skill.buffType === "def") {
+      hero.def += skill.buffValue;
+      log(L[currentLang].log_use_buff_item(skillInfo.name, skill.buffDuration, skill.buffValue, L[currentLang].status_def), "hero", "🛡️");
+      setTimeout(() => {
+        hero.def -= skill.buffValue;
+        log(L[currentLang].log_buff_expired(L[currentLang].status_def), "system", "⚙️");
+        updateUI();
+      }, skill.buffDuration * 1000);
+    }
+  } else if (skill.effect === "heal") {
+    const healed = clamp(skill.healAmount, 0, totalStats.maxHp - hero.hp);
+    hero.hp = clamp(hero.hp + healed, 0, totalStats.maxHp);
+    log(L[currentLang].log_player_heal(healed, hero.healCount), "hero", "❤️");
+    playAnimation(heroAvatarEl, "heal-animation");
   }
 
   updateUI();
 
   if (currentEnemy.hp <= 0) {
-    const expGained = currentEnemyIndex + 1 * 10;
+    const expGained = (currentEnemyIndex + 1) * 10;
     hero.exp += expGained;
     log(L[currentLang].log_enemy_defeated(currentEnemy.name, expGained), "system", "⭐");
 
@@ -248,11 +273,8 @@ function useSkill(skill) {
     }
 
     // 전투 종료 후 HP 회복
-    const armor = hero.equipment.armor ? equipment.find(e => e.id === hero.equipment.armor) : null;
-    const gloves = hero.equipment.gloves ? equipment.find(e => e.id === hero.equipment.gloves) : null;
-    const boots = hero.equipment.boots ? equipment.find(e => e.id === hero.equipment.boots) : null;
-    let totalHpBonus = (armor?.hpBonus || 0) + (gloves?.hpBonus || 0) + (boots?.hpBonus || 0);
-    hero.hp = hero.maxHp + totalHpBonus;
+    const finalStats = getHeroTotalStats();
+    hero.hp = finalStats.maxHp;
 
     hero.maxStageCleared = Math.max(hero.maxStageCleared, currentEnemyIndex);
     currentEnemy = null;
@@ -268,7 +290,7 @@ function useSkill(skill) {
 
   isPlayerTurn = false;
   updateUI();
-  setTimeout(enemyAttack, 400);
+  setTimeout(enemyAttack, skill.hits === 2 ? 800 : 400);
 }
 
 function useItem(item) {
@@ -278,7 +300,7 @@ function useItem(item) {
   item.count--;
   const lang = L[currentLang];
   const itemInfo = lang.items[item.id];
-  const statName = item.buffType === 'atk' ? lang.hero_atk(0,0).split(':')[0] : lang.hero_def(0).split(':')[0];
+  const statName = item.buffType === 'atk' ? lang.status_atk : lang.status_def;
 
   if (item.effect === "buff") {
     if (item.buffType === "atk") {
@@ -311,8 +333,18 @@ function useItem(item) {
 function levelUp() {
   hero.level++;
   hero.statPoints += 3;
+  hero.exp = 0; // 경험치 초기화 또는 (hero.exp - hero.expToNext)
   hero.expToNext = Math.floor(hero.expToNext * 1.5);
   log(L[currentLang].log_levelup(hero.level), "system", "⬆️");
+
+  // 스킬 습득 확인
+  skills.forEach(skill => {
+    if (skill.levelRequired === hero.level && !hero.learnedSkills.includes(skill.id)) {
+      hero.learnedSkills.push(skill.id);
+      log(L[currentLang].log_skill_learn(L[currentLang].skills[skill.id].name), "system", "🎓");
+    }
+  });
+
   showLevelUpModal();
 }
 
@@ -326,11 +358,11 @@ function allocateStat(type) {
   if (type === "atk") {
     hero.minAtk += 2;
     hero.maxAtk += 2;
-    statName = lang.hero_atk(0,0).split(':')[0];
+    statName = lang.status_atk;
     log(lang.log_stat_increase(statName, 2), "system", "⬆️");
   } else if (type === "def") {
     hero.def += 1;
-    statName = lang.hero_def(0).split(':')[0];
+    statName = lang.status_def;
     log(lang.log_stat_increase(statName, 1), "system", "⬆️");
   } else if (type === "hp") {
     hero.maxHp += 10;
@@ -345,12 +377,17 @@ function allocateStat(type) {
     setTimeout(() => {
       levelUpModal.style.display = "none";
       updateUI();
+      
+      // 레벨업 후 적 처치 로직 재개
+      const totalStats = getHeroTotalStats();
+      hero.hp = totalStats.maxHp;
+      hero.maxStageCleared = Math.max(hero.maxStageCleared, currentEnemyIndex);
       currentEnemy = null;
-      currentEnemyIndex++;
-      if (currentEnemyIndex >= enemies.length) {
+
+      if (currentEnemyIndex >= enemies.length -1) {
         gameClear();
       } else {
-        log(lang.log_next_stage, "system", "▶️");
+        log(L[currentLang].log_repeat_stage, "system", "⚔️");
         updateUI();
       }
     }, 500);
@@ -370,5 +407,22 @@ function equipItem(item) {
   }
   log(L[currentLang].log_equip_item(itemInfo.name), "system", "🎒");
   updateUI();
-  showEquipModal();
+  showStatusModal();
+}
+
+function equipSkill(skillId) {
+  const emptySlotIndex = hero.activeSkills.indexOf(null);
+  if (emptySlotIndex !== -1) {
+    hero.activeSkills[emptySlotIndex] = skillId;
+    updateUI();
+    showStatusModal();
+  }
+}
+
+function unequipSkill(skillId, index) {
+  if (hero.activeSkills[index] === skillId) {
+    hero.activeSkills[index] = null;
+    updateUI();
+    showStatusModal();
+  }
 }

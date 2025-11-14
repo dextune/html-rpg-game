@@ -3,7 +3,10 @@ const L = {
     // Data
     skills: {
       powerStrike: { name: "강력한 일격", description: "공격력 1.5배, 방어력 무시" },
-      weaken: { name: "약화", description: "적 방어력 2턴 동안 -2" }
+      weaken: { name: "약화", description: "적 방어력 2턴 동안 -2" },
+      doubleStrike: { name: "더블 스트라이크", description: "0.8배의 피해로 두 번 공격" },
+      defensiveStance: { name: "방어 태세", description: "1턴 동안 방어력 +10" },
+      holyBlessing: { name: "성스러운 축복", description: "HP를 25 회복" }
     },
     items: {
       atkPotion: { name: "공격력 포션", description: "3턴 동안 공격력 +5" },
@@ -30,9 +33,7 @@ const L = {
     attack: "⚔ 공격",
     heal: "💊 회복",
     save: "💾 저장",
-    equip: "🎒 장비",
-    fight_again: "⚔️ 다시 싸우기",
-    next_enemy: "➡ 다음 적",
+    status: "📊 상태",
     start_battle: "⚔️ 전투 시작",
     restart: "♻ 처음부터",
     footer_tip: "TIP: 공격/회복만으로도 클리어 가능! 코드 수정해서 직접 확장해보세요 🙂",
@@ -42,12 +43,24 @@ const L = {
     levelup_def: "🛡️ 방어력 +1",
     levelup_hp: "❤️ HP +10",
     levelup_points: "남은 포인트",
-    equip_title: "장비",
+    status_title: "상태 정보",
+    status_stats: "캐릭터 능력치",
+    status_level: "레벨",
+    status_exp: "경험치",
+    status_hp: "HP",
+    status_heal: "회복",
+    status_atk: "공격력",
+    status_def: "방어력",
     equip_current: "현재 장비",
     equip_none: "없음",
     equip_close: "닫기",
     equip_equip: "착용",
     equip_equipped: "착용중",
+    status_skills: "스킬 관리",
+    status_active_skills: "사용 스킬",
+    status_learned_skills: "보유 스킬",
+    skill_equip: "장착",
+    skill_unequip: "해제",
 
     // JS Logic
     current_stage: (stage) => `스테이지 ${stage}`,
@@ -66,6 +79,7 @@ const L = {
     log_player_attack: (enemyName, dmg) => `용사의 공격! ${enemyName}에게 ${dmg}의 피해!`,
     log_enemy_defeated: (enemyName, exp) => `${enemyName} 을(를) 물리쳤다! 경험치 +${exp}`,
     log_levelup: (level) => `레벨 ${level}로 상승했습니다!`,
+    log_skill_learn: (skillName) => `새로운 스킬 <${skillName}> 을(를) 배웠습니다!`,
     log_next_stage: "▶️ 다음 스테이지로 진행합니다.",
     log_repeat_stage: "⚔️ 같은 적과 다시 싸우거나 다음으로 진행할 수 있습니다.",
     log_no_heal: "더 이상 회복할 수 없습니다!",
@@ -94,7 +108,10 @@ const L = {
     // Data
     skills: {
       powerStrike: { name: "Power Strike", description: "1.5x damage, ignores defense" },
-      weaken: { name: "Weaken", description: "Enemy DEF -2 for 2 turns" }
+      weaken: { name: "Weaken", description: "Enemy DEF -2 for 2 turns" },
+      doubleStrike: { name: "Double Strike", description: "Attack twice with 0.8x damage" },
+      defensiveStance: { name: "Defensive Stance", description: "DEF +10 for 1 turn" },
+      holyBlessing: { name: "Holy Blessing", description: "Heal 25 HP" }
     },
     items: {
       atkPotion: { name: "ATK Potion", description: "ATK +5 for 3 turns" },
@@ -121,9 +138,7 @@ const L = {
     attack: "⚔ Attack",
     heal: "💊 Heal",
     save: "💾 Save",
-    equip: "🎒 Equip",
-    fight_again: "⚔️ Fight Again",
-    next_enemy: "➡ Next Enemy",
+    status: "📊 Status",
     start_battle: "⚔️ Start Battle",
     restart: "♻ Restart",
     footer_tip: "TIP: You can clear the game with only attack/heal! Try extending it by modifying the code 🙂",
@@ -133,12 +148,24 @@ const L = {
     levelup_def: "🛡️ DEF +1",
     levelup_hp: "❤️ HP +10",
     levelup_points: "Remaining Points",
-    equip_title: "Equipment",
+    status_title: "Status Info",
+    status_stats: "Character Stats",
+    status_level: "Level",
+    status_exp: "Experience",
+    status_hp: "HP",
+    status_heal: "Heals",
+    status_atk: "Attack",
+    status_def: "Defense",
     equip_current: "Current Gear",
     equip_none: "None",
     equip_close: "Close",
     equip_equip: "Equip",
     equip_equipped: "Equipped",
+    status_skills: "Skill Management",
+    status_active_skills: "Active Skills",
+    status_learned_skills: "Learned Skills",
+    skill_equip: "Equip",
+    skill_unequip: "Unequip",
 
     // JS Logic
     current_stage: (stage) => `Stage ${stage}`,
@@ -157,6 +184,7 @@ const L = {
     log_player_attack: (enemyName, dmg) => `Hero's attack! Dealt ${dmg} damage to ${enemyName}!`,
     log_enemy_defeated: (enemyName, exp) => `Defeated ${enemyName}! Gained +${exp} EXP.`,
     log_levelup: (level) => `Leveled up to Level ${level}!`,
+    log_skill_learn: (skillName) => `Learned a new skill: <${skillName}>!`,
     log_next_stage: "▶️ Proceeding to the next stage.",
     log_repeat_stage: "⚔️ You can fight the same enemy again or proceed to the next.",
     log_no_heal: "Cannot heal anymore!",

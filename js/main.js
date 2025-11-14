@@ -8,6 +8,10 @@ function setupEventListeners() {
     equipModal.style.display = "none";
   });
 
+  // 언어 변경 버튼
+  document.getElementById("lang-ko").addEventListener("click", () => setLanguage("ko"));
+  document.getElementById("lang-en").addEventListener("click", () => setLanguage("en"));
+
   nextBtn.addEventListener("click", () => {
     if (gameOver) return;
     if (currentEnemy) return;
@@ -42,21 +46,25 @@ function setupEventListeners() {
     // 장비 초기화
     hero.equipment.weapon = null;
     hero.equipment.armor = null;
+    hero.inventory = ["woodenSword", "leatherArmor"];
     logEl.innerHTML = "";
-    log("새 모험이 시작된다!", "system");
+    log(L[currentLang].log_new_adventure, "system", "🔄");
     spawnEnemy();
   });
 }
 
 // ===== 게임 초기화 =====
 function init() {
+  // 언어 설정
+  setLanguage("ko");
+
   // 저장된 게임 불러오기 시도
   const loaded = loadGame();
   if (loaded) {
-    log("저장된 게임을 불러왔습니다!", "system");
+    // log(L[currentLang].log_load_game, "system"); // loadGame()에서 이미 로그를 출력함
   } else {
-    log("HTML 미니 RPG에 오신 걸 환영합니다!", "system");
-    log("'공격'과 '회복'으로 적을 모두 물리쳐 보세요.", "system");
+    log(L[currentLang].log_welcome, "system", "👋");
+    log(L[currentLang].log_guide, "system", "👉");
     spawnEnemy();
   }
 

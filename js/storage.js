@@ -15,7 +15,8 @@ function saveGame() {
       exp: hero.exp,
       expToNext: hero.expToNext,
       statPoints: hero.statPoints,
-      equipment: hero.equipment
+      equipment: hero.equipment,
+      inventory: hero.inventory
     },
     skills: skills.map(skill => ({
       id: skill.id,
@@ -28,7 +29,8 @@ function saveGame() {
     gameState: {
       currentEnemyIndex: currentEnemyIndex,
       isPlayerTurn: isPlayerTurn,
-      gameOver: gameOver
+      gameOver: gameOver,
+      currentLang: currentLang
     },
     currentEnemy: currentEnemy ? {
       name: currentEnemy.name,
@@ -47,9 +49,9 @@ function saveGame() {
 
   try {
     localStorage.setItem("rpgGameSave", JSON.stringify(gameData));
-    log("게임이 저장되었습니다!", "system");
+    log(L[currentLang].log_save_game, "system", "💾");
   } catch (error) {
-    log("저장 중 오류가 발생했습니다.", "system");
+    log(L[currentLang].log_save_error, "system", "❌");
     console.error("Save error:", error);
   }
 }
@@ -60,6 +62,11 @@ function loadGame() {
     if (!savedData) return false;
 
     const gameData = JSON.parse(savedData);
+
+    // 언어 설정 복원
+    if (gameData.gameState.currentLang) {
+      setLanguage(gameData.gameState.currentLang);
+    }
 
     // 히어로 데이터 복원
     Object.assign(hero, gameData.hero);
@@ -97,15 +104,17 @@ function loadGame() {
     gameData.log.forEach(logEntry => {
       const line = document.createElement("div");
       line.className = logEntry.class;
-      line.textContent = logEntry.text;
+      line.innerHTML = logEntry.text; // innerHTML로 변경하여 아이콘도 복원
       logEl.appendChild(line);
     });
     logEl.scrollTop = logEl.scrollHeight;
+    log(L[currentLang].log_load_game, "system", "✅");
+
 
     updateUI();
     return true;
   } catch (error) {
-    log("불러오기 중 오류가 발생했습니다.", "system");
+    log(L[currentLang].log_load_error, "system", "❌");
     console.error("Load error:", error);
     return false;
   }

@@ -16,14 +16,13 @@ const hero = {
   equipment: {
     weapon: null,
     armor: null
-  }
+  },
+  inventory: ["woodenSword", "leatherArmor"] // 획득한 아이템 목록
 };
 
 const skills = [
   {
     id: "powerStrike",
-    name: "강력한 일격",
-    description: "공격력 1.5배, 방어력 무시",
     icon: "💥",
     cooldown: 3,
     currentCooldown: 0,
@@ -33,8 +32,6 @@ const skills = [
   },
   {
     id: "weaken",
-    name: "약화",
-    description: "적 방어력 2턴 동안 -2",
     icon: "🌀",
     cooldown: 4,
     currentCooldown: 0,
@@ -48,8 +45,6 @@ const skills = [
 const items = [
   {
     id: "atkPotion",
-    name: "공격력 포션",
-    description: "3턴 동안 공격력 +5",
     icon: "⚔",
     effect: "buff",
     buffType: "atk",
@@ -59,8 +54,6 @@ const items = [
   },
   {
     id: "defPotion",
-    name: "방어력 포션",
-    description: "3턴 동안 방어력 +3",
     icon: "🛡",
     effect: "buff",
     buffType: "def",
@@ -73,9 +66,7 @@ const items = [
 const equipment = [
   {
     id: "woodenSword",
-    name: "나무 검",
     type: "weapon",
-    description: "공격력 +3",
     icon: "🗡️",
     atkBonus: 3,
     defBonus: 0,
@@ -83,9 +74,7 @@ const equipment = [
   },
   {
     id: "ironSword",
-    name: "철 검",
     type: "weapon",
-    description: "공격력 +7",
     icon: "⚔️",
     atkBonus: 7,
     defBonus: 0,
@@ -93,9 +82,7 @@ const equipment = [
   },
   {
     id: "leatherArmor",
-    name: "가죽 갑옷",
     type: "armor",
-    description: "방어력 +2",
     icon: "🦺",
     atkBonus: 0,
     defBonus: 2,
@@ -103,13 +90,27 @@ const equipment = [
   },
   {
     id: "ironArmor",
-    name: "철 갑옷",
     type: "armor",
-    description: "방어력 +4, HP +20",
     icon: "🥼",
     atkBonus: 0,
     defBonus: 4,
     hpBonus: 20
+  },
+  {
+    id: "steelShield",
+    type: "armor",
+    icon: "🛡️",
+    atkBonus: 0,
+    defBonus: 6,
+    hpBonus: 30
+  },
+  {
+    id: "wizardRobe",
+    type: "armor",
+    icon: "🥋",
+    atkBonus: 0,
+    defBonus: 1,
+    hpBonus: 50
   }
 ];
 
@@ -120,7 +121,8 @@ const enemies = [
     maxHp: 40,
     minAtk: 5,
     maxAtk: 10,
-    def: 1
+    def: 1,
+    drops: [{ id: "atkPotion", chance: 0.3 }]
   },
   {
     name: "고블린",
@@ -128,7 +130,20 @@ const enemies = [
     maxHp: 65,
     minAtk: 8,
     maxAtk: 14,
-    def: 2
+    def: 2,
+    drops: [{ id: "ironSword", chance: 0.2 }],
+    abilities: [
+      { type: "double_attack", chance: 0.3 }
+    ]
+  },
+  {
+    name: "오크",
+    avatar: "덩치",
+    maxHp: 90,
+    minAtk: 12,
+    maxAtk: 18,
+    def: 4,
+    drops: [{ id: "ironArmor", chance: 0.25 }]
   },
   {
     name: "해골 병사",
@@ -136,7 +151,17 @@ const enemies = [
     maxHp: 80,
     minAtk: 10,
     maxAtk: 16,
-    def: 3
+    def: 3,
+    drops: [{ id: "defPotion", chance: 0.3 }]
+  },
+  {
+    name: "미믹",
+    avatar: "🎁",
+    maxHp: 70,
+    minAtk: 15,
+    maxAtk: 22,
+    def: 2,
+    drops: [{ id: "steelShield", chance: 0.3 }, { id: "wizardRobe", chance: 0.15 }]
   },
   {
     name: "용의 그림자",
@@ -144,7 +169,11 @@ const enemies = [
     maxHp: 120,
     minAtk: 12,
     maxAtk: 20,
-    def: 4
+    def: 4,
+    drops: [],
+    abilities: [
+      { type: "lifesteal", chance: 0.25, multiplier: 0.5 }
+    ]
   }
 ];
 
@@ -153,3 +182,4 @@ let currentEnemyIndex = 0;
 let currentEnemy = null;
 let isPlayerTurn = true;
 let gameOver = false;
+let turn = 1;

@@ -1,0 +1,172 @@
+const L = {
+  ko: {
+    // Data
+    skills: {
+      powerStrike: { name: "강력한 일격", description: "공격력 1.5배, 방어력 무시" },
+      weaken: { name: "약화", description: "적 방어력 2턴 동안 -2" }
+    },
+    items: {
+      atkPotion: { name: "공격력 포션", description: "3턴 동안 공격력 +5" },
+      defPotion: { name: "방어력 포션", description: "3턴 동안 방어력 +3" }
+    },
+    equipment: {
+      woodenSword: { name: "나무 검", description: "공격력 +3" },
+      ironSword: { name: "철 검", description: "공격력 +7" },
+      leatherArmor: { name: "가죽 갑옷", description: "방어력 +2, HP +10" },
+      ironArmor: { name: "철 갑옷", description: "방어력 +4, HP +20" },
+      steelShield: { name: "강철 방패", description: "방어력 +6, HP +30" },
+      wizardRobe: { name: "마법사의 로브", description: "방어력 +1, HP +50" }
+    },
+
+    // HTML data-lang
+    title: "HTML 미니 RPG",
+    subtitle: "턴제 전투 · 클릭으로만 즐기는 간단 RPG",
+    player: "플레이어",
+    enemy: "적",
+    attack: "⚔ 공격",
+    heal: "💊 회복",
+    save: "💾 저장",
+    equip: "🎒 장비",
+    next_enemy: "➡ 다음 적",
+    restart: "♻ 처음부터",
+    footer_tip: "TIP: 공격/회복만으로도 클리어 가능! 코드 수정해서 직접 확장해보세요 🙂",
+    levelup_title: "레벨업!",
+    levelup_desc: "능력치를 분배하세요",
+    levelup_atk: "⚔ 공격력 +2",
+    levelup_def: "🛡️ 방어력 +1",
+    levelup_hp: "❤️ HP +10",
+    levelup_points: "남은 포인트",
+    equip_title: "장비",
+    equip_current: "현재 장비",
+    equip_none: "없음",
+    equip_close: "닫기",
+    equip_equip: "착용",
+    equip_equipped: "착용중",
+
+    // JS Logic
+    current_stage: (stage) => `스테이지 ${stage}`,
+    hero_name: (name, level) => `${name} (Lv.${level})`,
+    hero_hp: (hp, maxHp, healCount) => `HP: ${hp} / ${maxHp} · 회복 가능: ${healCount}회`,
+    hero_atk: (min, max) => `공격: ${min} ~ ${max}`,
+    hero_def: (def) => `방어: ${def}`,
+    enemy_hp: (hp, maxHp) => `HP: ${hp} / ${maxHp}`,
+    enemy_atk: (min, max) => `공격: ${min} ~ ${max}`,
+    enemy_def: (def) => `방어: ${def}`,
+    enemy_none: "적 없음",
+
+    log_enemy_spawn: (name) => `⚔ ${name} 이(가) 나타났다!`,
+    log_game_clear: "🎉 모든 적을 물리쳤습니다! 게임 클리어!",
+    log_game_over: "💀 용사가 쓰러졌습니다... 게임 오버",
+    log_player_attack: (enemyName, dmg) => `용사의 공격! ${enemyName}에게 ${dmg}의 피해!`,
+    log_enemy_defeated: (enemyName, exp) => `${enemyName} 을(를) 물리쳤다! 경험치 +${exp}`,
+    log_levelup: (level) => `레벨 ${level}로 상승했습니다!`,
+    log_next_stage: "▶ '다음 적' 버튼으로 다음 스테이지로!",
+    log_no_heal: "더 이상 회복할 수 없습니다!",
+    log_player_heal: (healed, healCount) => `용사가 회복했다! HP를 ${healed} 회복. (남은 회복: ${healCount}회)`,
+    log_enemy_attack: (enemyName, dmg) => `${enemyName} 의 공격! 용사에게 ${dmg}의 피해!`,
+    log_skill_cooldown_reset: "스킬 쿨다운이 감소했습니다.",
+    log_use_skill: (skillName, enemyName, dmg) => `${skillName}! ${enemyName}에게 ${dmg}의 피해!`,
+    log_use_debuff_skill: (skillName, enemyName, duration, value) => `${skillName}! ${enemyName}의 방어력이 ${duration}턴 동안 ${Math.abs(value)} 감소!`,
+    log_debuff_expired: (enemyName) => `${enemyName}의 방어력 디버프가 해제되었습니다.`,
+    log_use_buff_item: (itemName, duration, value, stat) => `${itemName} 사용! ${stat}이(가) ${duration}턴 동안 +${value} 증가!`,
+    log_buff_expired: (stat) => `${stat} 버프가 해제되었습니다.`,
+    log_stat_increase: (stat, value) => `${stat}이(가) ${value} 증가했습니다!`,
+    log_equip_item: (itemName) => `${itemName}을(를) 착용했습니다!`,
+    log_load_game: "저장된 게임을 불러왔습니다!",
+    log_welcome: "HTML 미니 RPG에 오신 걸 환영합니다!",
+    log_guide: "'공격'과 '회복'으로 적을 모두 물리쳐 보세요.",
+    log_new_adventure: "새 모험이 시작된다!",
+    log_save_game: "게임이 저장되었습니다!",
+    log_save_error: "저장 중 오류가 발생했습니다.",
+    log_load_error: "불러오기 중 오류가 발생했습니다.",
+    log_item_drop: (enemyName, itemName) => `✨ ${enemyName}(이)가 ${itemName}을(를) 떨어뜨렸습니다!`,
+    log_monster_lifesteal: (enemyName, healed) => `🩸 ${enemyName}의 생명력 흡수! HP를 ${healed} 회복했습니다.`,
+    log_monster_double_attack: (enemyName) => `⚡ ${enemyName}의 빠른 공격!`
+  },
+  en: {
+    // Data
+    skills: {
+      powerStrike: { name: "Power Strike", description: "1.5x damage, ignores defense" },
+      weaken: { name: "Weaken", description: "Enemy DEF -2 for 2 turns" }
+    },
+    items: {
+      atkPotion: { name: "ATK Potion", description: "ATK +5 for 3 turns" },
+      defPotion: { name: "DEF Potion", description: "DEF +3 for 3 turns" }
+    },
+    equipment: {
+      woodenSword: { name: "Wooden Sword", description: "ATK +3" },
+      ironSword: { name: "Iron Sword", description: "ATK +7" },
+      leatherArmor: { name: "Leather Armor", description: "DEF +2, HP +10" },
+      ironArmor: { name: "Iron Armor", description: "DEF +4, HP +20" },
+      steelShield: { name: "Steel Shield", description: "DEF +6, HP +30" },
+      wizardRobe: { name: "Wizard's Robe", description: "DEF +1, HP +50" }
+    },
+
+    // HTML data-lang
+    title: "HTML Mini RPG",
+    subtitle: "Turn-based combat · A simple RPG played only by clicking",
+    player: "Player",
+    enemy: "Enemy",
+    attack: "⚔ Attack",
+    heal: "💊 Heal",
+    save: "💾 Save",
+    equip: "🎒 Equip",
+    next_enemy: "➡ Next Enemy",
+    restart: "♻ Restart",
+    footer_tip: "TIP: You can clear the game with only attack/heal! Try extending it by modifying the code 🙂",
+    levelup_title: "Level Up!",
+    levelup_desc: "Distribute your stat points",
+    levelup_atk: "⚔ ATK +2",
+    levelup_def: "🛡️ DEF +1",
+    levelup_hp: "❤️ HP +10",
+    levelup_points: "Remaining Points",
+    equip_title: "Equipment",
+    equip_current: "Current Gear",
+    equip_none: "None",
+    equip_close: "Close",
+    equip_equip: "Equip",
+    equip_equipped: "Equipped",
+
+    // JS Logic
+    current_stage: (stage) => `Stage ${stage}`,
+    hero_name: (name, level) => `${name} (Lv.${level})`,
+    hero_hp: (hp, maxHp, healCount) => `HP: ${hp} / ${maxHp} · Heals left: ${healCount}`,
+    hero_atk: (min, max) => `ATK: ${min} ~ ${max}`,
+    hero_def: (def) => `DEF: ${def}`,
+    enemy_hp: (hp, maxHp) => `HP: ${hp} / ${maxHp}`,
+    enemy_atk: (min, max) => `ATK: ${min} ~ ${max}`,
+    enemy_def: (def) => `DEF: ${def}`,
+    enemy_none: "No Enemy",
+
+    log_enemy_spawn: (name) => `⚔ ${name} appeared!`,
+    log_game_clear: "🎉 You have defeated all enemies! Game Clear!",
+    log_game_over: "💀 The hero has fallen... Game Over",
+    log_player_attack: (enemyName, dmg) => `Hero's attack! Dealt ${dmg} damage to ${enemyName}!`,
+    log_enemy_defeated: (enemyName, exp) => `Defeated ${enemyName}! Gained +${exp} EXP.`,
+    log_levelup: (level) => `Leveled up to Level ${level}!`,
+    log_next_stage: "▶ Proceed to the next stage with the 'Next Enemy' button!",
+    log_no_heal: "Cannot heal anymore!",
+    log_player_heal: (healed, healCount) => `The hero recovered! Restored ${healed} HP. (Heals left: ${healCount})`,
+    log_enemy_attack: (enemyName, dmg) => `${enemyName}'s attack! The hero took ${dmg} damage!`,
+    log_skill_cooldown_reset: "Skill cooldowns have been reduced.",
+    log_use_skill: (skillName, enemyName, dmg) => `${skillName}! Dealt ${dmg} damage to ${enemyName}!`,
+    log_use_debuff_skill: (skillName, enemyName, duration, value) => `${skillName}! ${enemyName}'s DEF decreased by ${Math.abs(value)} for ${duration} turns!`,
+    log_debuff_expired: (enemyName) => `${enemyName}'s DEF debuff has worn off.`,
+    log_use_buff_item: (itemName, duration, value, stat) => `Used ${itemName}! ${stat} increased by +${value} for ${duration} turns!`,
+    log_buff_expired: (stat) => `${stat} buff has worn off.`,
+    log_stat_increase: (stat, value) => `${stat} increased by ${value}!`,
+    log_equip_item: (itemName) => `Equipped ${itemName}!`,
+    log_load_game: "Loaded saved game!",
+    log_welcome: "Welcome to HTML Mini RPG!",
+    log_guide: "Defeat all enemies using 'Attack' and 'Heal'.",
+    log_new_adventure: "A new adventure begins!",
+    log_save_game: "Game saved!",
+    log_save_error: "An error occurred while saving.",
+    log_load_error: "An error occurred while loading.",
+    log_item_drop: (enemyName, itemName) => `✨ ${enemyName} dropped ${itemName}!`,
+    log_monster_lifesteal: (enemyName, healed) => `🩸 ${enemyName}'s Lifesteal! Recovered ${healed} HP.`,
+    log_monster_double_attack: (enemyName) => `⚡ ${enemyName}'s Quick Attack!`
+  }
+};
+
+let currentLang = "ko";
